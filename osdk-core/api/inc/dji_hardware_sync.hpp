@@ -87,7 +87,7 @@ public:
 
 #if STM32
   typedef time_ms RecvTimeMsg;
-#elif defined(__linux__)
+#elif defined(__linux__) || defined (__APPLE__)
   typedef timespec RecvTimeMsg;
 #endif
 
@@ -207,7 +207,7 @@ private:
 
 #if STM32
   typedef bool HWSyncDataFlag;
-#elif defined(__linux__)
+#elif defined(__linux__) || defined (__APPLE__)
   typedef std::atomic_bool HWSyncDataFlag;
 #endif
 

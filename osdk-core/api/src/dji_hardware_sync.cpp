@@ -278,7 +278,7 @@ HardwareSync::recordRecvTimeMsg(RecvTimeMsg &recvTime)
 {
   recvTime = vehicle->protocolLayer->getDriver()->getTimeStamp();
 }
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__APPLE__)
 void
 HardwareSync::setDataFlag(HWSyncDataFlag &flag, bool val)
 {
@@ -294,6 +294,10 @@ HardwareSync::getDataFlag(HWSyncDataFlag &flag)
 void
 HardwareSync::recordRecvTimeMsg(RecvTimeMsg &recvTime)
 {
+  #if defined(__linux__)
   timespec_get(&recvTime, TIME_UTC);
+  #elif defined(__APPLE__)
+    // TODO: Implement macos specific code
+  #endif
 }
 #endif

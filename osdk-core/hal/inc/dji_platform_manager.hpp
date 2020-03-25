@@ -38,7 +38,7 @@
 #ifdef QT
 #include <qt_serial_device.hpp>
 #include <qt_thread.hpp>
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__APPLE__)
 #include "linux_serial_device.hpp"
 #include "posix_thread.hpp"
 #include "posix_thread_manager.hpp"

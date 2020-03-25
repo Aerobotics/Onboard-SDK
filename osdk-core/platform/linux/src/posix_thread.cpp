@@ -87,8 +87,11 @@ PosixThread::createThread()
     DERROR("fail to create thread for %s!\n", infoStr.c_str());
     return false;
   }
-
-  ret = pthread_setname_np(threadID, infoStr.c_str());
+  #if defined(__linux__)
+    ret = pthread_setname_np(threadID, infoStr.c_str());
+  #elif defined(__APPLE__)
+    ret = pthread_setname_np(infoStr.c_str());
+  #endif
   if (0 != ret)
   {
     DERROR("fail to set thread name for %s!\n", infoStr.c_str());

@@ -171,7 +171,7 @@ PlatformManager::addHardDriver(uint8_t driver_type, const char* device_port,
   {
     return NULL;
   }
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__APPLE__)
   if (driver_type == PlatformManager::SERIAL_DEVICE)
   {
     LinuxSerialDevice* serialDevice =
@@ -194,7 +194,7 @@ PlatformManager::addThreadHandle()
 #elif STM32
   STM32F4DataGuard* stm32f4DataGuard = new STM32F4DataGuard;
   return stm32f4DataGuard;
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__APPLE__)
   PosixThreadManager* posixThreadManager = new PosixThreadManager();
   return posixThreadManager;
 #endif

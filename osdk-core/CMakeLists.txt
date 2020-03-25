@@ -48,7 +48,7 @@ if (CMAKE_SYSTEM_NAME MATCHES Linux)
 endif ()
 
 if (CMAKE_SYSTEM_NAME MATCHES Darwin)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g -O0 -Wall -Werror")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g -O0 -Wall")
 endif ()
 
 if (CMAKE_BUILD_TYPE MATCHES "Debug")
@@ -91,6 +91,9 @@ include_directories(
 if (CMAKE_SYSTEM_NAME MATCHES Linux)
   include_directories(
           platform/linux/inc)
+elseif (CMAKE_SYSTEM_NAME MATCHES Darwin)
+  include_directories(
+          platform/linux/inc)
 endif()
 
 ## Source code for OSDK CORE
@@ -105,6 +108,8 @@ FILE(GLOB OSDK_LIB_SRCS
 
 # Use this if more platform is supported
 if (CMAKE_SYSTEM_NAME MATCHES Linux)
+  FILE(GLOB OSDK_LIB_SRCS ${OSDK_LIB_SRCS} platform/linux/src/*.cpp)
+elseif (CMAKE_SYSTEM_NAME MATCHES Darwin)
   FILE(GLOB OSDK_LIB_SRCS ${OSDK_LIB_SRCS} platform/linux/src/*.cpp)
 endif()
 
