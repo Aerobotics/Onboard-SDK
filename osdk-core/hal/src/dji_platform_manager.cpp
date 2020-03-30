@@ -89,7 +89,7 @@ PlatformManager::addThread(Vehicle* vehicle_ptr, uint8_t thread_type)
 #elif STM32
   //! Threads not supported by default
   return NULL;
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__APPLE__)
   if (thread_type == CALLBACK_THREAD)
   {
     Thread* callbackThread =
@@ -207,7 +207,7 @@ PlatformManager::millisecSleep(int milliseconds)
   STM32F4::sleep_nms(milliseconds);
 #elif defined(QT)
   QThread::msleep(milliseconds);
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__APPLE__)
   usleep(milliseconds * 1000);
 #endif
 }
