@@ -33,6 +33,8 @@
 #include  <signal.h>
 #include  <stdlib.h>
 
+#include <chrono>
+
 using namespace DJI::OSDK;
 using namespace DJI::OSDK::Telemetry;
 
@@ -112,7 +114,7 @@ subscribeToData(Vehicle* vehicle, int responseTimeout)
   bool rtkAvailable = false;
   // Counters
   int elapsedTimeInMs = 0;
-  int timeToPrintInMs = 20000;
+  int timeToPrintInMs = 1000;
 
   // We will subscribe to six kinds of data:
   // 1. Flight Status at 1 Hz
@@ -179,10 +181,10 @@ subscribeToData(Vehicle* vehicle, int responseTimeout)
     return false;
   }
 
-  // Package 2: Subscribe to RC Channel and Velocity at freq 50 Hz
+  // Package 2: Subscribe to Velocity at freq 50 Hz
   pkgIndex                  = 2;
   freq                      = 50;
-  TopicName topicList50Hz[] = { TOPIC_RC, TOPIC_VELOCITY };
+  TopicName topicList50Hz[] = { TOPIC_VELOCITY };
   numTopic                  = sizeof(topicList50Hz) / sizeof(topicList50Hz[0]);
   enableTimestamp           = false;
 
@@ -264,7 +266,6 @@ subscribeToData(Vehicle* vehicle, int responseTimeout)
   TypeMap<TOPIC_STATUS_FLIGHT>::type     flightStatus;
   TypeMap<TOPIC_GPS_FUSED>::type         latLon;
   TypeMap<TOPIC_ALTITUDE_FUSIONED>::type altitude;
-  TypeMap<TOPIC_RC>::type                rc;
   TypeMap<TOPIC_VELOCITY>::type          velocity;
   TypeMap<TOPIC_QUATERNION>::type        quaternion;
   TypeMap<TOPIC_RTK_POSITION>::type      rtk;
@@ -274,12 +275,13 @@ subscribeToData(Vehicle* vehicle, int responseTimeout)
   TypeMap<TOPIC_RTK_YAW_INFO>::type      rtk_yaw_info;
 
   // Print in a loop for 2 sec
+  Timer timer;
+  float runtime_ms = 0;
   while (elapsedTimeInMs < timeToPrintInMs)
   {
     flightStatus = vehicle->subscribe->getValue<TOPIC_STATUS_FLIGHT>();
     latLon       = vehicle->subscribe->getValue<TOPIC_GPS_FUSED>();
     altitude     = vehicle->subscribe->getValue<TOPIC_ALTITUDE_FUSIONED>();
-    rc           = vehicle->subscribe->getValue<TOPIC_RC>();
     velocity     = vehicle->subscribe->getValue<TOPIC_VELOCITY>();
     quaternion   = vehicle->subscribe->getValue<TOPIC_QUATERNION>();
     if(rtkAvailable) {
@@ -289,6 +291,7 @@ subscribeToData(Vehicle* vehicle, int responseTimeout)
       rtk_yaw = vehicle->subscribe->getValue<TOPIC_RTK_YAW>();
       rtk_yaw_info = vehicle->subscribe->getValue<TOPIC_RTK_YAW_INFO>();
     }
+    /*
     std::cout << "Counter = " << elapsedTimeInMs << ":\n";
     std::cout << "-------\n";
     std::cout << "Flight Status                         = " << (int)flightStatus
@@ -309,8 +312,15 @@ subscribeToData(Vehicle* vehicle, int responseTimeout)
                 << "," << rtk_velocity.z << "," << rtk_yaw << "," << rtk_yaw_info << rtk_pos_info << "\n";
     }
     std::cout << "-------\n\n";
-    usleep(5000);
-    elapsedTimeInMs += 5;
+    */
+
+    // Monitoring code
+    float time_step_ms = timer.ElapsedMs() - runtime_ms;
+    runtime_ms = timer.ElapsedMs();
+    // std::cout << "Timestep (ms) " << time_step_ms << " Velocity (vx,vy,vz) = " << velocity.data.x << ", " << velocity.data.y << ", " << velocity.data.z << "\n";
+    std::cout << "Timestep (ms) " << time_step_ms << " Quat (w) " << quaternion.q0 << "\n";
+    elapsedTimeInMs = runtime_ms;
+    usleep(2500);
   }
 
   std::cout << "Done printing!\n";
@@ -742,4 +752,39 @@ subscribeToDataAndSaveLogToFile(Vehicle* vehicle, int responseTimeout)
 void  INThandler(int sig)
 {
     keepRunning = false;
+}
+
+Timer::Timer() 
+  :beg_(clock_::now()) {}
+
+void Timer::Reset() { 
+  beg_ = clock_::now(); 
+}
+
+float32_t Timer::Elapsed() const { 
+  return static_cast<float32_t>(
+    std::chrono::duration_cast<second_> (clock_::now() - beg_).count()
+  ); 
+}
+
+float32_t Timer::ElapsedMs() const {
+  return 1000.0*Elapsed();
+}
+
+float32_t Timer::ElapsedUs() const {
+  return 1000000.0*Elapsed();
+}
+
+std::string Timer::DateAndTimeStringNow() {
+  std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+  std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+  std::tm now_tm = *std::localtime(&now_c);
+  char date_c_str[30];
+  std::strftime(date_c_str, sizeof(date_c_str), "%Y-%m-%d_%H:%M:%S", &now_tm);
+  return std::string(date_c_str);
+}
+
+uint64_t Timer::TimestampNow() {
+  std::time_t timestamp = std::time(nullptr);
+  return static_cast<uint64_t>(timestamp);
 }

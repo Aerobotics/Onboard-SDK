@@ -33,6 +33,7 @@
 
 // System Includes
 #include <iostream>
+#include <string>
 
 // DJI OSDK includes
 #include <dji_vehicle.hpp>
@@ -46,4 +47,32 @@ bool subscribeToDataAndSaveLogToFile(DJI::OSDK::Vehicle* vehiclePtr, int respons
 
 // Broadcast data implementation for Matrice 100
 bool getBroadcastData(DJI::OSDK::Vehicle* vehicle, int responseTimeout = 1);
+
+class Timer {
+  public:
+    Timer();
+    void Reset();                   
+    float32_t Elapsed()   const;      
+    float32_t ElapsedMs() const;
+    float32_t ElapsedUs() const;
+
+    /*! @brief
+     *  Method blocks the calling thread for provided miliseconds
+     */
+    // static void SleepForMs(float milliseconds);
+    
+    /*! @brief
+     *  Returns a date string with format YYYY-MM-DD_HH-MM-SS
+     *  Boilerplate code form the internet
+     */
+    static std::string DateAndTimeStringNow();
+
+    static uint64_t TimestampNow();
+
+  private:
+    typedef std::chrono::high_resolution_clock clock_;
+    typedef std::chrono::duration<double, std::ratio<1>> second_;
+    std::chrono::time_point<clock_> beg_;
+};
+
 #endif // DJIOSDK_TELEMETRYSAMPLE_HPP
