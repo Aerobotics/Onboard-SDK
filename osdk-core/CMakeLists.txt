@@ -20,10 +20,10 @@
 # *
 # *
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.12)
 project(djiosdk-core)
 
-# We want to use INTERFACE_LINK_LIBRARIES property to 
+# We want to use INTERFACE_LINK_LIBRARIES property to
 # propagate link dependencies
 cmake_policy(SET CMP0022 NEW)
 
@@ -78,22 +78,25 @@ include (${CMAKE_CURRENT_SOURCE_DIR}/../contrib/DJIConfig.cmake)
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(
-        api/inc
-        modules/inc/payload
-        modules/inc/flight
-        protocol/inc
-        hal/inc
-        utility/inc
-        platform/default/inc)
+SET(OSDK_CORE_INCLUDE_DIRECTORIES
+  ${CMAKE_CURRENT_LIST_DIR}/api/inc
+  ${CMAKE_CURRENT_LIST_DIR}/modules/inc/payload
+  ${CMAKE_CURRENT_LIST_DIR}/modules/inc/flight
+  ${CMAKE_CURRENT_LIST_DIR}/protocol/inc
+  ${CMAKE_CURRENT_LIST_DIR}/hal/inc
+  ${CMAKE_CURRENT_LIST_DIR}/utility/inc
+  ${CMAKE_CURRENT_LIST_DIR}/platform/default/inc
+)
 
 # Use this if more platform is supported
 if (CMAKE_SYSTEM_NAME MATCHES Linux)
-  include_directories(
-          platform/linux/inc)
+  SET(OSDK_CORE_INCLUDE_DIRECTORIES  ${OSDK_CORE_INCLUDE_DIRECTORIES}
+    ${CMAKE_CURRENT_LIST_DIR}/platform/linux/inc
+  )
 elseif (CMAKE_SYSTEM_NAME MATCHES Darwin)
-  include_directories(
-          platform/linux/inc)
+  SET(OSDK_CORE_INCLUDE_DIRECTORIES  ${OSDK_CORE_INCLUDE_DIRECTORIES}
+    ${CMAKE_CURRENT_LIST_DIR}/platform/linux/inc
+  )
 endif()
 
 ## Source code for OSDK CORE
@@ -117,6 +120,8 @@ add_library(${PROJECT_NAME}
         STATIC
         ${OSDK_LIB_SRCS})
 
+target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${OSDK_CORE_INCLUDE_DIRECTORIES}>")
+
 ## Libraries to propagate as dependencies to third-party code depending on osdk-core
 ## Append to this variable when you want a dependency to get propagated
 SET(OSDK_INTERFACE_LIBS pthread) # pthread is assumed available on linux
@@ -127,10 +132,10 @@ SET(MODULE_BUILD_INTERFACE "")
 SET(MODULE_INSTALL_INTERFACE "")
 
 ## Advanced Sensing
-if(ADVANCED_SENSING) 
+if(ADVANCED_SENSING)
   # Add a cmake file to find libusb
   set(CMAKE_MODULE_PATH ${CURRENT_CMAKE_MODULE_PATH})
-  
+
   find_package(LibUSB REQUIRED)
   find_package(AdvancedSensing QUIET)
   if(NOT ADVANCED_SENSING_FOUND)
@@ -287,8 +292,8 @@ if(ADVANCED_SENSING)
   install(FILES ${ADVANCED_SENSING_LIBRARY}
         DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib)
 
-  set(OSDK_LIB_HEADERS 
-      ${OSDK_LIB_HEADERS} 
+  set(OSDK_LIB_HEADERS
+      ${OSDK_LIB_HEADERS}
       ${ADVANCED_SENSING_INCLUDE_DIRS}/dji_advanced_sensing.hpp
       ${ADVANCED_SENSING_INCLUDE_DIRS}/dji_advanced_sensing_protocol.hpp
       ${ADVANCED_SENSING_INCLUDE_DIRS}/linux_usb_device.hpp
